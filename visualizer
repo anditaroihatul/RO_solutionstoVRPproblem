@@ -1,0 +1,109 @@
+import javax.swing.*;
+import java.awt.*;
+import java.util.*;
+
+public class VRPVisualizer extends JPanel {
+    static class Node {
+        int id, x, y;
+        public Node(int id, int x, int y) {
+            this.id = id;
+            this.x = x;
+            this.y = y;
+        }
+    }
+
+    static final int WIDTH = 800, HEIGHT = 600;
+    static Node depot;
+    static List<Node> pickups = new ArrayList<>();
+    static List<List<Node>> vehicleRoutes = new ArrayList<>();
+    static int numVehicles = 3; // You can change the number of vehicles here
+
+    public static void main(String[] args) {
+        // Set depot location (real lat/lng converted to pixel)
+        depot = new Node(0, scaleX(112.75607027664445), scaleY(-7.288723349628001)); // Depot
+
+        // Coordinates: {latitude, longitude}
+        double[][] coords = {
+            {-7.28436287327013, 112.77337207718494},
+            {-7.2838520452227495, 112.76805057447031},
+            {-7.289819920523529, 112.76852341347396},
+            {-7.287470397796173, 112.76015415112313},
+            {-7.283170940280327, 112.75951042095116},
+            {-7.280574218242535, 112.76161327284628},
+            {-7.297122176520045, 112.76884819971036},
+            {-7.299644875492887, 112.7575792304767},
+            {-7.268916770213828, 112.74371432350654},
+            {-7.2704493035595945, 112.75547312786144},
+            {-7.297352924631167, 112.7552156359125},
+            {-7.291563674206592, 112.76989268383358},
+        };
+
+        // Convert to screen coordinates and add to pickup list
+        for (int i = 0; i < coords.length; i++) {
+            int x = scaleX(coords[i][1]);
+            int y = scaleY(coords[i][0]);
+            pickups.add(new Node(i + 1, x, y));
+        }
+
+        // Assign nodes to vehicles (naive round-robin)
+        for (int i = 0; i < numVehicles; i++) vehicleRoutes.add(new ArrayList<>());
+        for (int i = 0; i < pickups.size(); i++) {
+            vehicleRoutes.get(i % numVehicles).add(pickups.get(i));
+        }
+
+        // Launch the GUI
+        JFrame frame = new JFrame("VRP Visualizer");
+        frame.setSize(WIDTH, HEIGHT);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.add(new VRPVisualizer());
+        frame.setVisible(true);
+    }
+
+    @Override
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        drawRoutes(g);
+    }
+
+    private void drawRoutes(Graphics g) {
+        Color[] colors = {Color.RED, Color.BLUE, Color.GREEN, Color.MAGENTA, Color.ORANGE};
+
+        // Draw depot
+        g.setColor(Color.BLACK);
+        g.fillOval(depot.x - 6, depot.y - 6, 12, 12);
+        g.drawString("Depot", depot.x + 8, depot.y);
+
+        // Draw pickup points
+        for (Node node : pickups) {
+            g.setColor(Color.DARK_GRAY);
+            g.fillOval(node.x - 4, node.y - 4, 8, 8);
+            g.drawString("P" + node.id, node.x + 5, node.y);
+        }
+
+        // Draw vehicle routes
+        for (int v = 0; v < vehicleRoutes.size(); v++) {
+            List<Node> route = vehicleRoutes.get(v);
+            g.setColor(colors[v % colors.length]);
+
+            Node prev = depot;
+            for (Node next : route) {
+                g.drawLine(prev.x, prev.y, next.x, next.y);
+                prev = next;
+            }
+            // Return to depot
+            g.drawLine(prev.x, prev.y, depot.x, depot.y);
+        }
+    }
+
+    // Converts longitude to x-coordinate on panel
+    public static int scaleX(double lon) {
+        double minLng = 112.7437, maxLng = 112.7734;
+        return (int)((lon - minLng) / (maxLng - minLng) * 700 + 50); // Range [50, 750]
+    }
+
+    // Converts latitude to y-coordinate on panel (flipped vertically)
+    public static int scaleY(double lat) {
+        double minLat = -7.2996, maxLat = -7.2689;
+        return (int)((maxLat - lat) / (maxLat - minLat) * 500 + 50); // Range [50, 550]
+    }
+}
