@@ -44,7 +44,7 @@ public class VRPSolverVisualizer extends JPanel {
         new GeoPoint(-7.2704493035595945, 112.75547312786144, "SDN Airlangga 1"),
         new GeoPoint(-7.297352924631167,  112.7552156359125,  "SD Muhammadiyah 16"),
         new GeoPoint(-7.291563674206592,  112.76989268383358, "Anak Bangsa Christian School"),
-        new GeoPoint(-7.288723349628001,  112.75607027664445, "Central Education Center")
+        new GeoPoint(-7.288723349628001,  112.75607027664445, "Learning Center")
     );
     //point and route
     private List<Point> points = new ArrayList<>();
